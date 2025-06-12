@@ -17,27 +17,39 @@ def changeSign(button):
         button.config(text=signs[0])
 
 button_frame = Frame(window)
-button_frame.place()
+button_frame.pack(pady=40, anchor='n', expand=True)
 
-button_0x00 = Button(button_frame,
+button_0x0 = Button(button_frame,
                      text='0',
                      width=3,
                      height=1,
                      font=('arial',16,'bold'),
-                     command=lambda:changeSign(button_0x00))
+                     command=lambda:changeSign(button_0x0))
+button_0x0.grid(column=0, row=0)
 
-
-button_0x00.grid(column=0, row=0)
-
-
-button_0x01 = Button(button_frame,
+button_0x1 = Button(button_frame,
                      text='0',
                      width=3,
                      height=1,
                      font=('arial',16,'bold'),
-                     command=lambda:changeSign(button_0x01))
+                     command=lambda:changeSign(button_0x1))
+button_0x1.grid(column=1, row=0)
 
-button_0x01.grid(column=1, row=0)
+button_1x0 = Button(button_frame,
+                     text='0',
+                     width=3,
+                     height=1,
+                     font=('arial',16,'bold'),
+                     command=lambda:changeSign(button_1x0))
+button_1x0.grid(column=0, row=1)
+
+button_1x1 = Button(button_frame,
+                     text='0',
+                     width=3,
+                     height=1,
+                     font=('arial',16,'bold'),
+                     command=lambda:changeSign(button_1x1))
+button_1x1.grid(column=1, row=1)
 
 
 
