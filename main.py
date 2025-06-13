@@ -1,5 +1,8 @@
 from tkinter import *
 
+def gray_labels(n):
+    return [format(i ^ (i >> 1), f'0{n}b') for i in range(2**n)]
+
 class KMapSolver:
     def __init__(self, master):
         self.master = master
@@ -7,8 +10,18 @@ class KMapSolver:
         self.master.resizable(False, False)
         self.master.title("K-Map Solver")
 
-        self.button_frame = Frame(self.master, pady=20)
+        self.button_frame = Frame(self.master, pady=30)
         self.button_frame.place(relx=0.5, y=40, anchor='n')
+
+        self.function_label_row = Label(master,
+                                        text="",
+                                        font=('arial', 14, 'bold'),
+                                        justify="right",
+                                        anchor="e")
+
+        self.function_label_col = Label(master,
+                                        text="",
+                                        font=('arial', 14, 'bold'))
 
         self.value = ""
         
@@ -21,7 +34,7 @@ class KMapSolver:
                                    *self.options,
                                    command=self.changeDimensions)
         self.dropdown.config(width=10)
-        self.dropdown.place(relx=0.5, y=10, anchor='n')
+        self.dropdown.place(relx=0.51, y=10, anchor='n')
 
 
     def createMap(self, rows, columns):
@@ -30,22 +43,35 @@ class KMapSolver:
 
         self.buttons = []
 
-        for r in range(int(rows)):
-            row = []
-            for c in range(int(columns)):
+        row_vars = {2:1, 4:2, 8:3}.get(rows, 1)
+        col_vars = {2:1, 4:2, 8:3}.get(columns, 1)
+
+        row_labels = gray_labels(row_vars)
+        col_labels = gray_labels(col_vars)
+
+        for c, label in enumerate(col_labels):
+            lbl = Label(self.button_frame, text=label, font=('arial', 14, 'bold'))
+            lbl.grid(row=0, column=c+1, padx=2, pady=2)
+
+        for r, row_label in enumerate(row_labels):
+            lbl = Label(self.button_frame, text=row_label, font=('arial', 14, 'bold'))
+            lbl.grid(row=r+1, column=0, padx=2, pady=2)
+            row_buttons = []
+            for c in range(len(col_labels)):
                 btn = Button(
                     self.button_frame,
                     text='0',
                     width=3,
                     height=1,
                     font=('arial', 16, 'bold'),
-                    command=lambda b=None: self.changeSign(b))
-                btn.grid(row=r, column=c)
-                row.append(btn)
-            self.buttons.append(row)
+                    command=lambda b=None: self.changeSign(b)
+                )
+                btn.grid(row=r+1, column=c+1)
+                row_buttons.append(btn)
+            self.buttons.append(row_buttons)
 
-        for r in range(rows):
-            for c in range(columns):
+        for r in range(len(row_labels)):
+            for c in range(len(col_labels)):
                 self.buttons[r][c].config(command=lambda b=self.buttons[r][c]: self.changeSign(b))
 
 
@@ -65,12 +91,32 @@ class KMapSolver:
 
         if self.value == "2x2":
             self.createMap(2,2)
+
+            self.function_label_row.config(text="A")
+            self.function_label_col.config(text="B")
+            self.function_label_row.place(x=440, y=143, anchor="e")
+            self.function_label_col.place(x=500, y=44)
         elif self.value == "2x4":
             self.createMap(2,4)
+
+            self.function_label_row.config(text="A")
+            self.function_label_col.config(text="BC")
+            self.function_label_row.place(x=390, y=143, anchor="e")
+            self.function_label_col.place(x=493, y=44)
         elif self.value == "4x4":
             self.createMap(4,4)
+
+            self.function_label_row.config(text="AB")
+            self.function_label_col.config(text="CD")
+            self.function_label_row.place(x=380, y=185, anchor="e")
+            self.function_label_col.place(x=498, y=44)
         elif self.value == "4x8":
             self.createMap(4,8)
+
+            self.function_label_row.config(text="AB")
+            self.function_label_col.config(text="CDE")
+            self.function_label_row.place(x=280, y=185, anchor="e")
+            self.function_label_col.place(x=492, y=44)
 
 
 if __name__ == "__main__":
