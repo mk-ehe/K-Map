@@ -88,19 +88,21 @@ class KMapSolver:
                 color = next(color_cycle)
                 for c, val in enumerate(row):
                     self.buttons[r][c].config(bg="SystemButtonFace")
-
-                    if all(val == group_by or val == "-" for val in row):
+                    
+                    if row[c] == "1":
+                        color = next(color_cycle)
                         self.buttons[r][c].config(bg=color)
                         grouped[r][c] = str(group_number)
+                        
+                    if all(val == group_by or val == "-" for val in row):
+                        color = next(color_cycle)
+                        for i in range(len(row)):
+                            self.buttons[r][i].config(bg=color)
+                            grouped[r][i] = str(group_number)
 
                     elif row.count(group_by) + row.count("-") == 2:
-                        if self.buttons[r][c].cget("text") in f"{str(group_by)}-":
-                            self.buttons[r][c].config(bg=color)
-                            grouped[r][c] = str(group_number)
-
-                    elif row.count(group_by) + row.count("-") == 3:
                         for c in range(len(row) - 1):
-                            if (row[c] == group_by or row[c] == "-") and (row[c+1] == group_by or row[c+1] == "-"):
+                            if (row[c] == group_by) and (row[c+1] == group_by or row[c+1] == "-"):
                                 color = next(color_cycle)
                                 self.buttons[r][c].config(bg=color)
                                 self.buttons[r][c+1].config(bg=color)
@@ -108,25 +110,48 @@ class KMapSolver:
                                 grouped[r][c+1] = str(group_number)
                                 group_number += 1
 
-                            elif (row[c] == group_by or row[c] == "-") and (row[-1] == group_by or row[-1] == "-"):
+                            elif (row[c] == group_by) and (row[c-1] == group_by or row[c-1] == "-"):
+                                color = next(color_cycle)
+                                self.buttons[r][c].config(bg=color)
+                                self.buttons[r][c-1].config(bg=color)
+                                grouped[r][c] = str(group_number)
+                                grouped[r][c-1] = str(group_number)
+                                group_number += 1
+                                
+                            elif (row[c] == group_by) and (row[-1] == group_by or row[-1] == "-"):
                                 color = next(color_cycle)
                                 self.buttons[r][c].config(bg=color)
                                 self.buttons[r][-1].config(bg=color)
                                 grouped[r][c] = str(group_number)
                                 grouped[r][-1] = str(group_number)
                                 group_number += 1
-                            elif (row[c] == group_by or row[c] == "-") and (row[-1] == group_by or row[-1] == "-"):
+
+                    elif row.count(group_by) + row.count("-") == 3:
+                        for c in range(len(row) - 1):
+                            if (row[c] == group_by) and (row[c+1] == group_by or row[c+1] == "-"):
+                                color = next(color_cycle)
+                                self.buttons[r][c].config(bg=color)
+                                self.buttons[r][c+1].config(bg=color)
+                                grouped[r][c] = str(group_number)
+                                grouped[r][c+1] = str(group_number)
+                                group_number += 1
+
+                            elif (row[c] == group_by) and (row[c-1] == group_by or row[c-1] == "-"):
+                                color = next(color_cycle)
+                                self.buttons[r][c].config(bg=color)
+                                self.buttons[r][c-1].config(bg=color)
+                                grouped[r][c] = str(group_number)
+                                grouped[r][c-1] = str(group_number)
+                                group_number += 1
+                                
+                            elif (row[c] == group_by) and (row[-1] == group_by or row[-1] == "-"):
                                 color = next(color_cycle)
                                 self.buttons[r][c].config(bg=color)
                                 self.buttons[r][-1].config(bg=color)
                                 grouped[r][c] = str(group_number)
                                 grouped[r][-1] = str(group_number)
                                 group_number += 1
-                        
-                    elif row[c] == "1":
-                        color = next(color_cycle)
-                        self.buttons[r][c].config(bg=color)
-                        grouped[r][c] = str(group_number)
+                    
 
 
                 group_number += 1
