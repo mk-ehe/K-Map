@@ -13,23 +13,17 @@ class KMapSolver:
         self.button_frame = Frame(self.master, pady=30)
         self.button_frame.place(relx=0.5, y=40, anchor='n')
 
-        self.function_label_row = Label(master,
-                                        text="",
-                                        font=('arial', 14, 'bold'),
-                                        justify="right",
-                                        anchor="e")
-        self.function_label_col = Label(master,
-                                        text="",
-                                        font=('arial', 14, 'bold'))
+        self.function_label_row = Label(master, text="", font=('arial', 14, 'bold'), justify="right", anchor="e")
+        self.function_label_col = Label(master, text="", font=('arial', 14, 'bold'))
 
         self.value = ""
         
         self.dropdown_var = StringVar(self.master)
         self.dropdown_var.set("Select Map")
         self.options = ["2x2", "2x4", "4x4", "4x8"]
-        self.dropdown = OptionMenu(self.master, self.dropdown_var, *self.options, command=self.changeDimensions)
-        self.dropdown.config(width=10)
-        self.dropdown.place(x=400, y=10)
+        self.choose_map = OptionMenu(self.master, self.dropdown_var, *self.options, command=self.changeDimensions)
+        self.choose_map.config(width=10)
+        self.choose_map.place(x=400, y=10)
 
 
         self.dropdown_gr = StringVar(self.master)
@@ -38,6 +32,8 @@ class KMapSolver:
         self.group = OptionMenu(self.master, self.dropdown_gr, *self.gr_options, command=self.groupBy)
         self.group.config(width=14)
         self.group.place(x=510, y=10)
+
+        self.groupBy_called = False
 
 
     def createMap(self, rows, columns):
@@ -52,7 +48,6 @@ class KMapSolver:
         row_labels = gray_labels(row_vars)      
         col_labels = gray_labels(col_vars)     
         
-
         for c, label in enumerate(col_labels):
             lbl = Label(self.button_frame, text=label, font=('arial', 14, 'bold'))
             lbl.grid(row=0, column=c+1, padx=2, pady=2)
@@ -61,14 +56,9 @@ class KMapSolver:
             lbl = Label(self.button_frame, text=row_label, font=('arial', 14, 'bold'))
             lbl.grid(row=r+1, column=0, padx=2, pady=2)
             row_buttons = []
+
             for c in range(len(col_labels)):
-                btn = Button(
-                    self.button_frame,
-                    text='0',
-                    width=3,
-                    height=1,
-                    font=('arial', 16, 'bold'),
-                    command=lambda b=None: self.changeSign(b))
+                btn = Button(self.button_frame, text='0', width=3, height=1, font=('arial', 16, 'bold'), command=lambda b=None: self.changeSign(b))
                 btn.grid(row=r+1, column=c+1)
                 row_buttons.append(btn)
             self.buttons.append(row_buttons)
@@ -87,11 +77,15 @@ class KMapSolver:
 
     def groupBy(self, group_by):
         self.dropdown_gr.set("Select Grouping")
-        if self.getKmapValues():
-            kmap = self.getKmapValues()
-            possible_group_sizes = [1, 2, 4, 8]   #idx[y] x idx[z]
-            rows = len(kmap)
-            columns = len(kmap[0])
+        kmap = self.getKmapValues()
+        if kmap:
+            self.groupBy_called = True
+            for r, row in enumerate(kmap):
+                for c, val in enumerate(row):
+                    if val == group_by or val == "-":
+                        self.buttons[r][c].config(bg="red")
+                    else:
+                        self.buttons[r][c].config(bg="SystemButtonFace")
 
 
     def changeSign(self, button):
@@ -103,10 +97,16 @@ class KMapSolver:
             button.config(text=signs[2])
         else:
             button.config(text=signs[0])
-    
+
+        kmap = self.getKmapValues()
+        if kmap and self.groupBy_called == True:
+            for r, row in enumerate(kmap):
+                for c, val in enumerate(row):
+                    self.buttons[r][c].config(bg="SystemButtonFace")
+
 
     def changeDimensions(self, value):
-        self.value = self.dropdown.cget('text')
+        self.value = self.choose_map.cget('text')
 
         if self.value == "2x2":
             self.createMap(2,2)
