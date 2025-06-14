@@ -1,4 +1,5 @@
 from tkinter import *
+from itertools import cycle
 
 def gray_labels(n):
     return [format(i ^ (i >> 1), f'0{n}b') for i in range(2**n)]
@@ -78,14 +79,26 @@ class KMapSolver:
     def groupBy(self, group_by):
         self.dropdown_gr.set("Select Grouping")
         kmap = self.getKmapValues()
+        color_cycle = cycle(["#FF6767", "#8AFF8A", "#6E6EFF", "#FFFF87", "#00FFFF", "#FF71FF", "#FFB01D", "#8F2D8F", "#008000", "#212185", "#FFC0CB", "#808080", "#A52A2A", "#00FFC8"])
         if kmap:
             self.groupBy_called = True
             for r, row in enumerate(kmap):
+                color = next(color_cycle)
                 for c, val in enumerate(row):
-                    if val == group_by or val == "-":
-                        self.buttons[r][c].config(bg="red")
+                    self.buttons[r][c].config(bg="SystemButtonFace")
+
+                    if all(val == group_by or val == "-" for val in row):
+                        self.buttons[r][c].config(bg=color)     
+
+                    if row.count(group_by) + row.count("-") == 2:
+                        if self.buttons[r][c].cget("text") in f"{str(group_by)}-":
+                            self.buttons[r][c].config(bg=color)
+
                     else:
-                        self.buttons[r][c].config(bg="SystemButtonFace")
+                        if self.buttons[r][c].cget("text") in f"{str(group_by)}":
+                            self.buttons[r][c].config(bg=color)
+
+
 
 
     def changeSign(self, button):
