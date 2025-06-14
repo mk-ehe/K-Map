@@ -18,7 +18,6 @@ class KMapSolver:
                                         font=('arial', 14, 'bold'),
                                         justify="right",
                                         anchor="e")
-
         self.function_label_col = Label(master,
                                         text="",
                                         font=('arial', 14, 'bold'))
@@ -27,14 +26,18 @@ class KMapSolver:
         
         self.dropdown_var = StringVar(self.master)
         self.dropdown_var.set("Select Map")
-
         self.options = ["2x2", "2x4", "4x4", "4x8"]
-        self.dropdown = OptionMenu(self.master,
-                                   self.dropdown_var,
-                                   *self.options,
-                                   command=self.changeDimensions)
+        self.dropdown = OptionMenu(self.master, self.dropdown_var, *self.options, command=self.changeDimensions)
         self.dropdown.config(width=10)
-        self.dropdown.place(relx=0.51, y=10, anchor='n')
+        self.dropdown.place(x=400, y=10)
+
+
+        self.dropdown_gr = StringVar(self.master)
+        self.dropdown_gr.set("Select Grouping")
+        self.gr_options = ["0", "1"]
+        self.group = OptionMenu(self.master, self.dropdown_gr, *self.gr_options, command=self.groupBy)
+        self.group.config(width=14)
+        self.group.place(x=510, y=10)
 
 
     def createMap(self, rows, columns):
@@ -46,8 +49,9 @@ class KMapSolver:
         row_vars = {2:1, 4:2, 8:3}.get(rows, 1)
         col_vars = {2:1, 4:2, 8:3}.get(columns, 1)
 
-        row_labels = gray_labels(row_vars)
-        col_labels = gray_labels(col_vars)
+        row_labels = gray_labels(row_vars)      
+        col_labels = gray_labels(col_vars)     
+        
 
         for c, label in enumerate(col_labels):
             lbl = Label(self.button_frame, text=label, font=('arial', 14, 'bold'))
@@ -64,8 +68,7 @@ class KMapSolver:
                     width=3,
                     height=1,
                     font=('arial', 16, 'bold'),
-                    command=lambda b=None: self.changeSign(b)
-                )
+                    command=lambda b=None: self.changeSign(b))
                 btn.grid(row=r+1, column=c+1)
                 row_buttons.append(btn)
             self.buttons.append(row_buttons)
@@ -73,6 +76,22 @@ class KMapSolver:
         for r in range(len(row_labels)):
             for c in range(len(col_labels)):
                 self.buttons[r][c].config(command=lambda b=self.buttons[r][c]: self.changeSign(b))
+
+
+    def getKmapValues(self):
+        try:
+            return [[btn.cget('text') for btn in row] for row in self.buttons]
+        except AttributeError:
+            pass
+    
+
+    def groupBy(self, group_by):
+        self.dropdown_gr.set("Select Grouping")
+        if self.getKmapValues():
+            kmap = self.getKmapValues()
+            possible_group_sizes = [1, 2, 4, 8]   #idx[y] x idx[z]
+            rows = len(kmap)
+            columns = len(kmap[0])
 
 
     def changeSign(self, button):
@@ -91,32 +110,31 @@ class KMapSolver:
 
         if self.value == "2x2":
             self.createMap(2,2)
-
             self.function_label_row.config(text="A")
             self.function_label_col.config(text="B")
             self.function_label_row.place(x=440, y=143, anchor="e")
             self.function_label_col.place(x=500, y=44)
+            
         elif self.value == "2x4":
             self.createMap(2,4)
-
             self.function_label_row.config(text="A")
             self.function_label_col.config(text="BC")
             self.function_label_row.place(x=390, y=143, anchor="e")
             self.function_label_col.place(x=493, y=44)
+
         elif self.value == "4x4":
             self.createMap(4,4)
-
             self.function_label_row.config(text="AB")
             self.function_label_col.config(text="CD")
             self.function_label_row.place(x=380, y=185, anchor="e")
             self.function_label_col.place(x=498, y=44)
+            
         elif self.value == "4x8":
             self.createMap(4,8)
-
             self.function_label_row.config(text="AB")
             self.function_label_col.config(text="CDE")
             self.function_label_row.place(x=280, y=185, anchor="e")
-            self.function_label_col.place(x=492, y=44)
+            self.function_label_col.place(x=491, y=44)
 
 
 if __name__ == "__main__":
