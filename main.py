@@ -103,7 +103,8 @@ class KMapSolver:
             for r, row in enumerate(kmap):
                 for c, val in enumerate(row):
                     self.buttons[r][c].config(bg="SystemButtonFace")
-
+                    self.groupBy_called = False
+                    
 
     def changeDimensions(self, value):
         self.value = self.choose_map.cget('text')
