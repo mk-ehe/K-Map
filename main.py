@@ -102,7 +102,7 @@ class KMapSolver:
                     self.buttons[r][c].config(bg="SystemButtonFace")
 
                     if row[c] == group_by:
-                        """groups all single values"""
+                        """groups all values one by one"""
                         color = next(color_cycle)
                         self.buttons[r][c].config(bg=color)
                         grouped[r][c] = str(group_number)
@@ -111,17 +111,6 @@ class KMapSolver:
 
                     if row.count(group_by) + row.count("-") == 2 or row.count(group_by) + row.count("-") == 3:
                         for cl in range(len(row) - 1):
-                            if kmap[0][0] == group_by and kmap[0][-1] == group_by and kmap[-1][0] == group_by and kmap[-1][-1] == group_by:
-                                """checks edges and groups them"""
-                                self.buttons[0][0].config(bg=color)
-                                self.buttons[0][-1].config(bg=color)
-                                self.buttons[-1][0].config(bg=color)
-                                self.buttons[-1][-1].config(bg=color)
-                                grouped[0][0] = str(group_number)
-                                grouped[0][-1] = str(group_number)
-                                grouped[-1][0] = str(group_number)
-                                grouped[-1][-1] = str(group_number)
-                                group_number += 1
 
                             if (row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-"):
                                 """groups(2) value horizontally if next to eachother"""
@@ -130,6 +119,15 @@ class KMapSolver:
                                 self.buttons[r][cl+1].config(bg=color)
                                 grouped[r][cl] = str(group_number)
                                 grouped[r][cl+1] = str(group_number)
+                                group_number += 1
+
+                            if (row[cl] == row[0] and row[cl] == group_by) and (row[-1] == group_by or row[-1] == "-"):
+                                """groups(only 1 group of 2) value horizontally if on the other side(wrap-around)"""
+                                color = next(color_cycle)
+                                self.buttons[r][cl].config(bg=color)
+                                self.buttons[r][-1].config(bg=color)
+                                grouped[r][cl] = str(group_number)
+                                grouped[r][-1] = str(group_number)
                                 group_number += 1
 
                             # elif (row[cl] == group_by) and (row[cl-1] == group_by or row[cl-1] == "-"):
@@ -142,8 +140,11 @@ class KMapSolver:
                             #     group_number += 1
                             
 
-                            elif ((row[cl] == row[0] and row[cl] == group_by) and (row[-1] == group_by or row[-1] == "-")) and (
-                                kmap[r-1][cl] == kmap[r][0] and kmap[r-1][cl] == group_by) and (kmap[r-1][-1] == group_by or kmap[r-1][-1] == "-"):
+                            if (row[cl] == row[0] and (row[cl] == group_by or row[cl] == "-")) and (row[-1] == group_by or row[-1] == "-") and (
+                                kmap[r-1][cl] == kmap[r-1][0] and (kmap[r-1][cl] == group_by or kmap[r-1][cl] == "-")) and (
+                                kmap[r-1][-1] == group_by or kmap[r-1][-1] == "-") and (
+                                not all(i[0] == "-" for i in [row[cl], row[-1], kmap[r-1][cl], kmap[r-1][-1]])
+                                ):
                                 """wrap-around group into one big group if next to eachother"""
                                 color = next(color_cycle)
                                 self.buttons[r][cl].config(bg=color)
@@ -157,13 +158,19 @@ class KMapSolver:
                                 group_number += 1
 
 
-                            elif (row[cl] == row[0] and row[cl] == group_by) and (row[-1] == group_by or row[-1] == "-"):
-                                """groups(only 1 group of 2) value horizontally if on the other side(wrap-around)"""
-                                color = next(color_cycle)
-                                self.buttons[r][cl].config(bg=color)
-                                self.buttons[r][-1].config(bg=color)
-                                grouped[r][cl] = str(group_number)
-                                grouped[r][-1] = str(group_number)
+                            if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
+                                kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
+                                not all(i[0] == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])
+                            ):
+                                """checks corners and groups them"""
+                                self.buttons[0][0].config(bg=color)
+                                self.buttons[0][-1].config(bg=color)
+                                self.buttons[-1][0].config(bg=color)
+                                self.buttons[-1][-1].config(bg=color)
+                                grouped[0][0] = str(group_number)
+                                grouped[0][-1] = str(group_number)
+                                grouped[-1][0] = str(group_number)
+                                grouped[-1][-1] = str(group_number)
                                 group_number += 1
 
 
