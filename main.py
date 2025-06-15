@@ -174,9 +174,7 @@ class KMapSolver:
                                 group_number += 1
 
 
-                    if all(col == group_by or col == "-" for col in row) and (
-                        not all([i[0] == "-" for i in [kmap[r][j]]] for j in range(len(kmap)))
-                    ):
+                    if all(col == group_by or col == "-" for col in row) and any(col == group_by for col in row):
                         """groups whole rows where 4 same values one by one"""
                         color = next(color_cycle)
                         for c in range(cols):
@@ -186,9 +184,7 @@ class KMapSolver:
 
 
             for c in range(cols):
-                if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and (
-                    not all([i[0] == "-" for i in [kmap[j][c]]] for j in range(len(kmap)))
-                ):
+                if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
                     """checks whole columns where 4 same values one by one"""
                     color = next(color_cycle)
                     for r in range(rows):
