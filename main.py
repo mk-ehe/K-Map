@@ -35,6 +35,7 @@ class KMapSolver:
         self.group.place(x=510, y=10)
 
         self.groupBy_called = False
+        self.wrap_edges_2 = False
 
 
     def createMap(self, rows, columns):
@@ -111,10 +112,7 @@ class KMapSolver:
 
                     if row.count(group_by) + row.count("-") == 2 or row.count(group_by) + row.count("-") == 3:
                         for cl in range(len(row) - 1):
-
-
-
-                            if (row[cl] == row[0] and row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-"):
+                            if (row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-"):
                                 """groups(2) value horizontally if next to eachother"""
                                 color = next(color_cycle)
                                 self.buttons[r][cl].config(bg=color)
@@ -124,11 +122,9 @@ class KMapSolver:
                                 group_number += 1
 
 
-                            if (
-                                (row[0] == group_by or row[0] == "-") and
+                            if ((row[0] == group_by or row[0] == "-") and
                                 (row[-1] == group_by or row[-1] == "-") and
-                                (row[0] == group_by or row[-1] == group_by)
-                                ):
+                                (row[0] == group_by or row[-1] == group_by)):
                                 """groups(only 1 group of 2) value horizontally if on the other side(wrap-around)"""
                                 color = next(color_cycle)
                                 self.buttons[r][0].config(bg=color)
@@ -137,12 +133,11 @@ class KMapSolver:
                                 grouped[r][-1] = str(group_number)
                                 group_number += 1
 
-
-
                             
-                            cells = [row[0], row[-1], kmap[r-1][0], kmap[r-1][-1]]
+                            cells = [kmap[r][0], kmap[r][-1], kmap[r-1][0], kmap[r-1][-1]]
                             if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
                                 """wrap-around group into one big group if next to eachother"""
+                                self.wrap_edges_2 = True
                                 color = next(color_cycle)
                                 self.buttons[r][0].config(bg=color)
                                 self.buttons[r][-1].config(bg=color)
@@ -157,8 +152,7 @@ class KMapSolver:
 
                             if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
                                 kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
-                                not all(i[0] == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])
-                            ):
+                                not all(i[0] == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])):
                                 """checks corners and groups them"""
                                 self.buttons[0][0].config(bg=color)
                                 self.buttons[0][-1].config(bg=color)
@@ -171,28 +165,28 @@ class KMapSolver:
                                 group_number += 1
 
 
-            for c in range(cols):
-                if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
-                    """checks whole columns where all same values one by one"""
-                    color = next(color_cycle)
-                    for r in range(rows):
-                        self.buttons[r][c].config(bg=color)
-                        grouped[r][c] = str(group_number)
-                    group_number += 1
+                for c in range(cols):
+                    if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows))and self.wrap_edges_2 == False:
+                        """checks whole columns where all same values one by one"""
+                        color = next(color_cycle)
+                        for r in range(rows):
+                            self.buttons[r][c].config(bg=color)
+                            grouped[r][c] = str(group_number)
+                        group_number += 1
 
-                if all(col == group_by or col == "-" for col in row) and any(col == group_by for col in row):
-                    """groups whole rows where all same values one by one"""
-                    color = next(color_cycle)
-                    for c in range(cols):
-                        self.buttons[r][c].config(bg=color)
-                        grouped[r][c] = str(group_number)
-                    group_number += 1
+                    if all(col == group_by or col == "-" for col in row) and any(col == group_by for col in row):
+                        """groups whole rows where all same values one by one"""
+                        color = next(color_cycle)
+                        for c in range(cols):
+                            self.buttons[r][c].config(bg=color)
+                            grouped[r][c] = str(group_number)
+                        group_number += 1
 
             
             for r in range(rows - 1):
                 if all(col == group_by or col == "-" for col in kmap[r]) and any(col == group_by for col in kmap[r]) and (
                     all(col == group_by or col == "-" for col in kmap[r+1]) and any(col == group_by for col in kmap[r+1])):
-                    """groups """
+                    """groups 2xcol_amount"""
                     color = next(color_cycle)
                     for c in range(cols):
                         self.buttons[r][c].config(bg=color)
@@ -200,9 +194,10 @@ class KMapSolver:
                         self.buttons[r+1][c].config(bg=color)
                         grouped[r+1][c] = str(group_number)
                     group_number += 1
-                
-                elif all(col == group_by or col == "-" for col in kmap[0]) and any(col == group_by for col in kmap[0]) and (
+
+                if all(col == group_by or col == "-" for col in kmap[0]) and any(col == group_by for col in kmap[0]) and (
                     all(col == group_by or col == "-" for col in kmap[-1]) and any(col == group_by for col in kmap[-1])):
+                    """groups first and last row if proper group"""
                     color = next(color_cycle)
                     for c in range(cols):
                         self.buttons[0][c].config(bg=color)
@@ -210,6 +205,9 @@ class KMapSolver:
                         self.buttons[-1][c].config(bg=color)
                         grouped[-1][c] = str(group_number)
                     group_number += 1
+
+
+        self.wrap_edges_2 = False
 
 
         group_map = {}
