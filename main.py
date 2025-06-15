@@ -82,54 +82,75 @@ class KMapSolver:
         group_number = 1
         grouped = [[None for row in range(len(kmap[0]))] for col in range(len(kmap))]
         color_cycle = cycle(["#FF6767", "#8AFF8A", "#6E6EFF", "#FFFF87", "#00FFFF", "#FF71FF", "#FFB01D", "#8F2D8F", "#008000", "#39398F", "#FFC0CB", "#808080", "#883535", "#00FFC8"])
+        color = next(color_cycle)
         if kmap:
             self.groupBy_called = True
+
+            if all(val == group_by or val == "-" for row in kmap for val in row):
+                for r, row in enumerate(kmap):
+                    for c, val in enumerate(row):
+                        self.buttons[r][c].config(bg=color)
+                        grouped[r][c] = str(group_number)
+                print(grouped)
+                return
+            
             for r, row in enumerate(kmap):
-                color = next(color_cycle)
                 for c, val in enumerate(row):
                     self.buttons[r][c].config(bg="SystemButtonFace")
-                    
-                    if row[c] == "1":
+
+                    if row[c] == group_by:
                         color = next(color_cycle)
                         self.buttons[r][c].config(bg=color)
                         grouped[r][c] = str(group_number)
+                        group_number += 1
                         
                     if all(val == group_by or val == "-" for val in row):
                         color = next(color_cycle)
                         for i in range(len(row)):
                             self.buttons[r][i].config(bg=color)
                             grouped[r][i] = str(group_number)
+                        group_number += 1
                             
-
                     elif row.count(group_by) + row.count("-") == 2 or row.count(group_by) + row.count("-") == 3:
-                        for c in range(len(row) - 1):
-                            if (row[c] == group_by) and (row[c+1] == group_by or row[c+1] == "-"):
+                        for cl in range(len(row) - 1):
+                            if (row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-"):
                                 color = next(color_cycle)
-                                self.buttons[r][c].config(bg=color)
-                                self.buttons[r][c+1].config(bg=color)
-                                grouped[r][c] = str(group_number)
-                                grouped[r][c+1] = str(group_number)
+                                self.buttons[r][cl].config(bg=color)
+                                self.buttons[r][cl+1].config(bg=color)
+                                grouped[r][cl] = str(group_number)
+                                grouped[r][cl+1] = str(group_number)
                                 group_number += 1
 
-                            elif (row[c] == group_by) and (row[c-1] == group_by or row[c-1] == "-"):
+                            elif (row[cl] == group_by) and (row[cl-1] == group_by or row[cl-1] == "-"):
                                 color = next(color_cycle)
-                                self.buttons[r][c].config(bg=color)
-                                self.buttons[r][c-1].config(bg=color)
-                                grouped[r][c] = str(group_number)
-                                grouped[r][c-1] = str(group_number)
+                                self.buttons[r][cl].config(bg=color)
+                                self.buttons[r][cl-1].config(bg=color)
+                                grouped[r][cl] = str(group_number)
+                                grouped[r][cl-1] = str(group_number)
                                 group_number += 1
                                 
-                            elif (row[c] == group_by) and (row[-1] == group_by or row[-1] == "-"):
+                            elif ((row[cl] == row[0]) and row[cl] == group_by) and (row[-1] == group_by or row[-1] == "-"):
                                 color = next(color_cycle)
-                                self.buttons[r][c].config(bg=color)
+                                self.buttons[r][cl].config(bg=color)
                                 self.buttons[r][-1].config(bg=color)
-                                grouped[r][c] = str(group_number)
+                                grouped[r][cl] = str(group_number)
                                 grouped[r][-1] = str(group_number)
                                 group_number += 1
 
+
+        group_map = {}
+        next_group = 1
+        for i, row in enumerate(grouped):
+            for j, val in enumerate(row):
+                if val is not None:
+                    if val not in group_map:
+                        print(group_map)
+                        group_map[val] = str(next_group)
+                        next_group += 1
+                        print(group_map)
+                    grouped[i][j] = group_map[val]
+
         print(grouped)
-
-
 
 
     def changeSign(self, button):
