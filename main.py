@@ -88,189 +88,187 @@ class KMapSolver:
 
 
     def groupBy(self, group_by):
-        """
-        <-- The order of grouping Karnaugh Map -->
-
-        1. Checks if whole group
-        2. Checks every singular row 
-        3. Checks every singular column
-        4. Chceck rows if can create 2xN rows
-        5. Chceck columns if can create Nx2 columns
-        6. Checks Wrap-around rows (first and last)
-        7. Wrap-around columns (first and last)
-        8. 2x2 and larger rectangles
-        9. Horizontal pairs (non-wrap)
-        10. Vertical pairs (non-wrap)
-        11. Wrap-around horizontal pairs
-        12. Wrap-around vertical pairs
-        13. Singles (if non-grouped remained)
-
-        <-- The order of grouping Karnaugh Map -->
-        """
-        
-        
         self.dropdown_gr.set("Select Grouping")
         kmap = self.getKmapValues()
         rows = len(kmap)
         cols = len(kmap[0])
-
-        for r in range(rows):
-            for c in range(cols):
-                self.buttons[r][c].config(bg="SystemButtonFace")
-
         group_number = 1
-        grouped = [[None for _ in range(cols)] for _ in range(rows)]
-
-        def validGroup(cells):
-            return all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells)
-
-
-        #1.
-        all_cells = [kmap[r][c] for r in range(rows) for c in range(cols)]
-        if validGroup(all_cells):
-            for r in range(rows):
-                for c in range(cols):
-                    grouped[r][c] = str(group_number)
-            self.colorGroups(grouped)
-            print(grouped)
-            return
-
-
-        # 2.
-        for r in range(rows):
-            if validGroup(kmap[r]) and all(grouped[r][c] is None for c in range(cols)):
-                for c in range(cols):
-                    grouped[r][c] = str(group_number)
-                group_number += 1
-
-
-        # 3.
-        for c in range(cols):
-            col_vals = [kmap[r][c] for r in range(rows)]
-            if validGroup(col_vals) and all(grouped[r][c] is None for r in range(rows)):
-                for r in range(rows):
-                    grouped[r][c] = str(group_number)
-                group_number += 1
-
-
-        # 4.
-        for r in range(rows - 1):
-            for c in range(cols):
-                if (grouped[r][c] is None and grouped[r+1][c] is None):
-                    cells = [kmap[r][c], kmap[r+1][c]]
-                    if validGroup(cells):
+        grouped = [[None for row in range(len(kmap[0]))] for col in range(len(kmap))]
+        if kmap:
+            if all(val == group_by or val == "-" for row in kmap for val in row):
+                # checks if whole map is value to group by
+                for r, row in enumerate(kmap):
+                    for c, val in enumerate(row):
                         grouped[r][c] = str(group_number)
-                        grouped[r+1][c] = str(group_number)
-            if any(grouped[r][c] == str(group_number) for c in range(cols)):
-                group_number += 1
+                self.colorGroups(grouped)
+                print(grouped)
+                return
 
-
-        # 5.
-        for c in range(cols - 1):
-            for r in range(rows):
-                if (grouped[r][c] is None and grouped[r][c+1] is None):
-                    cells = [kmap[r][c], kmap[r][c+1]]
-                    if validGroup(cells):
+            for r, row in enumerate(kmap):
+                for c, col in enumerate(row):
+                    self.buttons[r][c].config(bg="SystemButtonFace")
+                    if row[c] == group_by:
+                        # groups all values one by one
                         grouped[r][c] = str(group_number)
-                        grouped[r][c+1] = str(group_number)
-            if any(grouped[r][c] == str(group_number) for r in range(rows)):
-                group_number += 1
+                        group_number += 1
 
+                for cl in range(cols - 1):
+                    if row.count(group_by) + row.count("-") == 2 or row.count(group_by) + row.count("-") == 3:
+                        if ((row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-")) or
+                            (row[cl] == "-" and row[cl+1] == group_by)):
+                            # groups(2) value horizontally if next to eachother
+                            grouped[r][cl] = str(group_number)
+                            grouped[r][cl+1] = str(group_number)
+                            group_number += 1
 
-        # 6.
-        for c in range(cols):
-            if (grouped[0][c] is None and grouped[-1][c] is None):
-                cells = [kmap[0][c], kmap[-1][c]]
-                if validGroup(cells):
-                    grouped[0][c] = str(group_number)
-                    grouped[-1][c] = str(group_number)
-        if any(grouped[0][c] == str(group_number) for c in range(cols)):
-            group_number += 1
+                        if ((row[0] == group_by or row[0] == "-") and
+                            (row[-1] == group_by or row[-1] == "-") and
+                            (row[0] == group_by or row[-1] == group_by)):
+                            # groups(only 1 group of 2) value horizontally if on the other side(wrap-around)
+                            grouped[r][0] = str(group_number)
+                            grouped[r][-1] = str(group_number)
+                            group_number += 1
 
+                        cells = [kmap[r][0], kmap[r][-1], kmap[r-1][0], kmap[r-1][-1]]
+                        if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
+                            # wrap-around group into one big group if next to eachother (horizontal)
+                            grouped[r][0] = str(group_number)
+                            grouped[r][-1] = str(group_number)
+                            grouped[r-1][0] = str(group_number)
+                            grouped[r-1][-1] = str(group_number)
+                            group_number += 1
 
-        # 7.
-        for r in range(rows):
-            if (grouped[r][0] is None and grouped[r][-1] is None):
-                cells = [kmap[r][0], kmap[r][-1]]
-                if validGroup(cells):
-                    grouped[r][0] = str(group_number)
-                    grouped[r][-1] = str(group_number)
-        if any(grouped[r][0] == str(group_number) for r in range(rows)):
-            group_number += 1
+                for c in range(cols):
+                    for rl in range(rows - 1):
+                        if ((kmap[rl][c] == group_by and (kmap[rl+1][c] == group_by or kmap[rl+1][c] == "-")) or
+                            (kmap[rl][c] == "-" and kmap[rl+1][c] == group_by)):
+                            # groups(2) value vertically if next to each other
+                            grouped[rl][c] = str(group_number)
+                            grouped[rl+1][c] = str(group_number)
+                            group_number += 1
 
+                for c in range(cols):
+                    col_vals = [kmap[r][c] for r in range(rows)]
+                    if col_vals.count(group_by) + col_vals.count("-") == 2 or col_vals.count(group_by) + col_vals.count("-") == 3:
+                        if ((col_vals[0] == group_by or col_vals[0] == "-") and
+                            (col_vals[-1] == group_by or col_vals[-1] == "-") and
+                            (col_vals[0] == group_by or col_vals[-1] == group_by)):
+                            # groups(only 1 group of 2) value vertically if on the other side(wrap-around)
+                            grouped[0][c] = str(group_number)
+                            grouped[-1][c] = str(group_number)
+                            group_number += 1
 
-        # 8.
-        for r1 in range(rows):
-            for r2 in range(r1+1, rows):
-                for c1 in range(cols):
-                    for c2 in range(c1+1, cols):
-                        rect_cells = [kmap[r][c] for r in range(r1, r2+1) for c in range(c1, c2+1)]
-                        if validGroup(rect_cells):
-                            already_grouped = any(grouped[r][c] is not None for r in range(r1, r2+1) for c in range(c1, c2+1))
-                            if not already_grouped:
+                        cells = [kmap[0][c], kmap[-1][c], kmap[0][c-1], kmap[-1][c-1]]
+                        if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
+                            # wrap-around group into one big group if next to eachother (vertical)
+                            grouped[0][c] = str(group_number)
+                            grouped[-1][c] = str(group_number)
+                            grouped[0][c-1] = str(group_number)
+                            grouped[-1][c-1] = str(group_number)
+                            group_number += 1
+
+                if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
+                    kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
+                    not all(i == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])):
+                    # checks corners and groups them
+                    grouped[0][0] = str(group_number)
+                    grouped[0][-1] = str(group_number)
+                    grouped[-1][0] = str(group_number)
+                    grouped[-1][-1] = str(group_number)
+                    group_number += 1
+
+                for c in range(cols):
+                    if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
+                        # checks whole columns where all same values one by one
+                        for r in range(rows):
+                            grouped[r][c] = str(group_number)
+                        group_number += 1
+
+                for r2, row2 in enumerate(kmap):
+                    if all(col == group_by or col == "-" for col in row2) and any(col == group_by for col in row2):
+                        # groups whole rows where all same values one by one
+                        for c in range(cols):
+                            grouped[r2][c] = str(group_number)
+                        group_number += 1
+
+            for r1 in range(rows):
+                for r2 in range(r1+1, rows):
+                    for c1 in range(cols):
+                        for c2 in range(c1+1, cols):
+                            # all 2x2 groups
+                            cells = [kmap[r][c] for r in range(r1, r2+1) for c in range(c1, c2+1)]
+                            if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
                                 for r in range(r1, r2+1):
                                     for c in range(c1, c2+1):
                                         grouped[r][c] = str(group_number)
                                 group_number += 1
 
-
-        # 9.
-        for r in range(rows):
-            for c in range(cols - 1):
-                if grouped[r][c] is None and grouped[r][c+1] is None:
-                    cells = [kmap[r][c], kmap[r][c+1]]
-                    if validGroup(cells):
+            for c in range(cols):
+                if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
+                    # checks whole columns where all same values one by one
+                    for r in range(rows):
                         grouped[r][c] = str(group_number)
-                        grouped[r][c+1] = str(group_number)
-                        group_number += 1
+                    group_number += 1
 
+            for r2, row2 in enumerate(kmap):
+                if all(col == group_by or col == "-" for col in row2) and any(col == group_by for col in row2):
+                    # groups whole rows where all same values one by one
+                    for c in range(cols):
+                        grouped[r2][c] = str(group_number)
+                    group_number += 1
 
-        # 10.
-        for c in range(cols):
             for r in range(rows - 1):
-                if grouped[r][c] is None and grouped[r+1][c] is None:
-                    cells = [kmap[r][c], kmap[r+1][c]]
-                    if validGroup(cells):
+                if all(col == group_by or col == "-" for col in kmap[r]) and any(col == group_by for col in kmap[r]) and (
+                    all(col == group_by or col == "-" for col in kmap[r+1]) and any(col == group_by for col in kmap[r+1])):
+                    # groups rows next to eachother
+                    for c in range(cols):
                         grouped[r][c] = str(group_number)
                         grouped[r+1][c] = str(group_number)
+                    group_number += 1
+
+                if all(col == group_by or col == "-" for col in kmap[0]) and any(col == group_by for col in kmap[0]) and (
+                    all(col == group_by or col == "-" for col in kmap[-1]) and any(col == group_by for col in kmap[-1])):
+                    # groups first and last row if proper group
+                    for c in range(cols):
+                        grouped[0][c] = str(group_number)
+                        grouped[-1][c] = str(group_number)
+                    group_number += 1
+
+            for c in range(cols - 1):
+                col1 = [kmap[r][c] for r in range(rows)]
+                col2 = [kmap[r][c+1] for r in range(rows)]
+                if (all(val == group_by or val == "-" for val in col1) and any(val == group_by for val in col1) and
+                    all(val == group_by or val == "-" for val in col2) and any(val == group_by for val in col2)):
+                    # groups columns next to each other
+                    for r in range(rows):
+                        grouped[r][c] = str(group_number)
+                        grouped[r][c+1] = str(group_number)
+                    group_number += 1
+
+            col_first = [kmap[r][0] for r in range(rows)]
+            col_last = [kmap[r][cols-1] for r in range(rows)]
+            if (all(val == group_by or val == "-" for val in col_first) and any(val == group_by for val in col_first) and
+                all(val == group_by or val == "-" for val in col_last) and any(val == group_by for val in col_last)):
+                # groups wrap-around first and last column if proper group
+                for r in range(rows):
+                    grouped[r][0] = str(group_number)
+                    grouped[r][cols-1] = str(group_number)
+                group_number += 1
+
+            for r2, row2 in enumerate(kmap):
+                for c, col in enumerate(row2):
+                    if row2[c] == group_by and grouped[r2][c] is None:
+                        # groups all values one by one
+                        grouped[r2][c] = str(group_number)
                         group_number += 1
 
-
-        # 11.
-        for r in range(rows):
-            if grouped[r][0] is None and grouped[r][-1] is None:
-                cells = [kmap[r][0], kmap[r][-1]]
-                if validGroup(cells):
-                    grouped[r][0] = str(group_number)
-                    grouped[r][-1] = str(group_number)
-                    group_number += 1
-
-
-        # 12.
-        for c in range(cols):
-            if grouped[0][c] is None and grouped[-1][c] is None:
-                cells = [kmap[0][c], kmap[-1][c]]
-                if validGroup(cells):
-                    grouped[0][c] = str(group_number)
-                    grouped[-1][c] = str(group_number)
-                    group_number += 1
-
-
-        # 13.
-        for r in range(rows):
-            for c in range(cols):
-                if grouped[r][c] is None and kmap[r][c] == group_by:
-                    grouped[r][c] = str(group_number)
-                    group_number += 1
-
-
-        # Remap group numbers to consecutive integers
         group_map = {}
         next_group = 1
         for i, row in enumerate(grouped):
             for j, val in enumerate(row):
                 if val is not None:
                     if val not in group_map:
+                        # correcting group number
                         group_map[val] = str(next_group)
                         next_group += 1
                     grouped[i][j] = group_map[val]
