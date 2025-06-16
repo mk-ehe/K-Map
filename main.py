@@ -57,14 +57,10 @@ class KMapSolver:
             row_buttons = []
 
             for c in range(len(col_labels)):
-                btn = Button(self.button_frame, text='0', width=3, height=1, font=('arial', 16, 'bold'), command=lambda b=None: self.changeSign(b))
+                btn = Button(self.button_frame, text='0', width=3, height=1, font=('arial', 16, 'bold'), command=lambda r=r, c=c: self.changeSign(self.buttons[r][c]))
                 btn.grid(row=r+1, column=c+1)
                 row_buttons.append(btn)
             self.buttons.append(row_buttons)
-
-        for r in range(len(row_labels)):
-            for c in range(len(col_labels)):
-                self.buttons[r][c].config(command=lambda b=self.buttons[r][c]: self.changeSign(b))
 
 
     def getKmapValues(self):
@@ -93,50 +89,74 @@ class KMapSolver:
             for r, row in enumerate(kmap):
                 for c, col in enumerate(row):
                     self.buttons[r][c].config(bg="SystemButtonFace")
-
                     if row[c] == group_by:
                         """groups all values one by one"""
                         grouped[r][c] = str(group_number)
                         group_number += 1
 
 
+                    
+                for cl in range(rows-1):
                     if row.count(group_by) + row.count("-") == 2 or row.count(group_by) + row.count("-") == 3:
-                        for cl in range(len(row) - 1):
-                            if (row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-"):
-                                """groups(2) value horizontally if next to eachother"""
-                                grouped[r][cl] = str(group_number)
-                                grouped[r][cl+1] = str(group_number)
-                                group_number += 1
+                        if (row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-"):
+                            """groups(2) value horizontally if next to eachother"""
+                            grouped[r][cl] = str(group_number)
+                            grouped[r][cl+1] = str(group_number)
+                            group_number += 1
 
 
-                            if ((row[0] == group_by or row[0] == "-") and
-                                (row[-1] == group_by or row[-1] == "-") and
-                                (row[0] == group_by or row[-1] == group_by)):
-                                """groups(only 1 group of 2) value horizontally if on the other side(wrap-around)"""
-                                grouped[r][0] = str(group_number)
-                                grouped[r][-1] = str(group_number)
-                                group_number += 1
+                        if ((row[0] == group_by or row[0] == "-") and
+                            (row[-1] == group_by or row[-1] == "-") and
+                            (row[0] == group_by or row[-1] == group_by)):
+                            """groups(only 1 group of 2) value horizontally if on the other side(wrap-around)"""
+                            grouped[r][0] = str(group_number)
+                            grouped[r][-1] = str(group_number)
+                            group_number += 1
 
-                            
-                            cells = [kmap[r][0], kmap[r][-1], kmap[r-1][0], kmap[r-1][-1]]
-                            if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
-                                """wrap-around group into one big group if next to eachother"""
-                                grouped[r][0] = str(group_number)
-                                grouped[r][-1] = str(group_number)
-                                grouped[r-1][0] = str(group_number)
-                                grouped[r-1][-1] = str(group_number)
-                                group_number += 1
+                        
+                        cells = [kmap[r][0], kmap[r][-1], kmap[r-1][0], kmap[r-1][-1]]
+                        if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
+                            """wrap-around group into one big group if next to eachother (horizontal)"""
+                            grouped[r][0] = str(group_number)
+                            grouped[r][-1] = str(group_number)
+                            grouped[r-1][0] = str(group_number)
+                            grouped[r-1][-1] = str(group_number)
+                            group_number += 1
 
 
-                            if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
-                                kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
-                                not all(i[0] == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])):
-                                """checks corners and groups them"""
-                                grouped[0][0] = str(group_number)
-                                grouped[0][-1] = str(group_number)
-                                grouped[-1][0] = str(group_number)
-                                grouped[-1][-1] = str(group_number)
-                                group_number += 1
+
+                for c in range(cols):
+                    col_vals = [kmap[r][c] for r in range(rows)]
+                    if col_vals.count(group_by) + col_vals.count("-") == 2 or col_vals.count(group_by) + col_vals.count("-") == 3:
+                        if ((col_vals[0] == group_by or col_vals[0] == "-") and
+                            (col_vals[-1] == group_by or col_vals[-1] == "-") and
+                            (col_vals[0] == group_by or col_vals[-1] == group_by)):
+                            """groups(only 1 group of 2) value vertically if on the other side(wrap-around)"""
+                            grouped[0][c] = str(group_number)
+                            grouped[-1][c] = str(group_number)
+                            group_number += 1
+
+                        cells = [kmap[0][c], kmap[-1][c], kmap[0][c-1], kmap[-1][c-1]]
+                        if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
+                            """wrap-around group into one big group if next to eachother (vertical)"""
+                            grouped[0][c] = str(group_number)
+                            grouped[-1][c] = str(group_number)
+                            grouped[0][c-1] = str(group_number)
+                            grouped[-1][c-1] = str(group_number)
+                            group_number += 1
+
+
+
+                if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
+                    kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
+                    not all(i[0] == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])):
+                    """checks corners and groups them"""
+                    grouped[0][0] = str(group_number)
+                    grouped[0][-1] = str(group_number)
+                    grouped[-1][0] = str(group_number)
+                    grouped[-1][-1] = str(group_number)
+                    group_number += 1
+
 
 
                 for c in range(cols):
@@ -154,10 +174,11 @@ class KMapSolver:
                         group_number += 1
 
             
+
             for r in range(rows - 1):
                 if all(col == group_by or col == "-" for col in kmap[r]) and any(col == group_by for col in kmap[r]) and (
                     all(col == group_by or col == "-" for col in kmap[r+1]) and any(col == group_by for col in kmap[r+1])):
-                    """groups 2xcol_amount"""
+                    """groups rows next to eachother"""
                     for c in range(cols):
                         grouped[r][c] = str(group_number)
                         grouped[r+1][c] = str(group_number)
@@ -170,6 +191,30 @@ class KMapSolver:
                         grouped[0][c] = str(group_number)
                         grouped[-1][c] = str(group_number)
                     group_number += 1
+
+
+
+            for c in range(cols - 1):
+                col1 = [kmap[r][c] for r in range(rows)]
+                col2 = [kmap[r][c+1] for r in range(rows)]
+                if (all(val == group_by or val == "-" for val in col1) and any(val == group_by for val in col1) and
+                    all(val == group_by or val == "-" for val in col2) and any(val == group_by for val in col2)):
+                    """groups columns next to each other"""
+                    for r in range(rows):
+                        grouped[r][c] = str(group_number)
+                        grouped[r][c+1] = str(group_number)
+                    group_number += 1
+
+            col_first = [kmap[r][0] for r in range(rows)]
+            col_last = [kmap[r][cols-1] for r in range(rows)]
+            if (all(val == group_by or val == "-" for val in col_first) and any(val == group_by for val in col_first) and
+                all(val == group_by or val == "-" for val in col_last) and any(val == group_by for val in col_last)):
+                """groups wrap-around first and last column if proper group"""
+                for r in range(rows):
+                    grouped[r][0] = str(group_number)
+                    grouped[r][cols-1] = str(group_number)
+                group_number += 1
+
 
 
         group_map = {}
@@ -188,7 +233,6 @@ class KMapSolver:
         color_cycle = cycle(["#FF5C5C","#AEFFAE","#7070FF","#E0E06B",
                              "#9BFFFF","#FF93FF","#FFB56B","#B061FF",
                              "#61FFB0","#ADFF5C","#FF48A3","#808080"])
-
         for r in range(len(grouped)):
             for c in range(len(grouped[0])):
                 group_id = grouped[r][c]
@@ -212,7 +256,7 @@ class KMapSolver:
             button.config(text=signs[2])
         else:
             button.config(text=signs[0])
-
+            
         kmap = self.getKmapValues()
         if kmap:
             for r, row in enumerate(kmap):
