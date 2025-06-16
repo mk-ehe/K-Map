@@ -70,6 +70,23 @@ class KMapSolver:
             pass
     
 
+    def colorGroups(self, grouped):
+        group_colors = {}
+        color_cycle = cycle([
+            "#FF5C5C", "#AEFFAE", "#7070FF", "#E0E06B",
+            "#9BFFFF", "#FF93FF", "#FFB56B", "#B061FF",
+            "#61FFB0", "#ADFF5C", "#FF48A3", "#808080"
+        ])
+        for r in range(len(grouped)):
+            for c in range(len(grouped[0])):
+                group_id = grouped[r][c]
+                if group_id is not None:
+                    if group_id not in group_colors:
+                        group_colors[group_id] = next(color_cycle)
+                    color = group_colors[group_id]
+                    self.buttons[r][c].config(bg=color)
+
+
     def groupBy(self, group_by):
         self.dropdown_gr.set("Select Grouping")
         kmap = self.getKmapValues()
@@ -83,22 +100,20 @@ class KMapSolver:
                 for r, row in enumerate(kmap):
                     for c, val in enumerate(row):
                         grouped[r][c] = str(group_number)
+                self.colorGroups(grouped)
                 print(grouped)
                 return
             
+                                        
             for r, row in enumerate(kmap):
                 for c, col in enumerate(row):
                     self.buttons[r][c].config(bg="SystemButtonFace")
-                    if row[c] == group_by:
-                        """groups all values one by one"""
-                        grouped[r][c] = str(group_number)
-                        group_number += 1
 
 
                     
                 for cl in range(rows-1):
                     if row.count(group_by) + row.count("-") == 2 or row.count(group_by) + row.count("-") == 3:
-                        if (row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-") or (
+                        if ((row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-")) or (
                             row[cl] == "-" and (row[cl+1] == group_by)):
                             """groups(2) value horizontally if next to eachother"""
                             grouped[r][cl] = str(group_number)
@@ -109,10 +124,10 @@ class KMapSolver:
                         if ((row[0] == group_by or row[0] == "-") and
                             (row[-1] == group_by or row[-1] == "-") and
                             (row[0] == group_by or row[-1] == group_by)):
-                            """groups(only 1 group of 2) value horizontally if on the other side(wrap-around)"""
-                            grouped[r][0] = str(group_number)
-                            grouped[r][-1] = str(group_number)
-                            group_number += 1
+                                """groups(only 1 group of 2) value horizontally if on the other side(wrap-around)"""
+                                grouped[r][0] = str(group_number)
+                                grouped[r][-1] = str(group_number)
+                                group_number += 1
 
                         
                         cells = [kmap[r][0], kmap[r][-1], kmap[r-1][0], kmap[r-1][-1]]
@@ -123,6 +138,18 @@ class KMapSolver:
                             grouped[r-1][0] = str(group_number)
                             grouped[r-1][-1] = str(group_number)
                             group_number += 1
+
+
+
+                        for c in range(cols):
+                            for rl in range(rows - 1):
+                                if ((kmap[rl][c] == group_by and (kmap[rl+1][c] == group_by or kmap[rl+1][c] == "-")) or
+                                    (kmap[rl][c] == "-" and kmap[rl+1][c] == group_by)):
+                                    if grouped[r][0] is None and grouped[r][-1] is None:
+                                        """groups(2) value vertically if next to each other"""
+                                        grouped[rl][c] = str(group_number)
+                                        grouped[rl+1][c] = str(group_number)
+                                        group_number += 1
 
 
 
@@ -147,7 +174,6 @@ class KMapSolver:
                             group_number += 1
 
 
-
                 if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
                     kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
                     not all(i[0] == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])):
@@ -160,21 +186,34 @@ class KMapSolver:
 
 
 
-                for c in range(cols):
-                    if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
-                        """checks whole columns where all same values one by one"""
-                        for r in range(rows):
-                            grouped[r][c] = str(group_number)
-                        group_number += 1
-                
-                for r, row in enumerate(kmap):
-                    if all(col == group_by or col == "-" for col in row) and any(col == group_by for col in row):
-                        """groups whole rows where all same values one by one"""
-                        for c in range(cols):
-                            grouped[r][c] = str(group_number)
-                        group_number += 1
+            for r1 in range(rows):
+                for r2 in range(r1+1, rows):
+                    for c1 in range(cols):
+                        for c2 in range(c1+1, cols):
+                            """all 2x2 groups"""
+                            cells = [kmap[r][c] for r in range(r1, r2+1) for c in range(c1, c2+1)]
+                            if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
+                                    for r in range(r1, r2+1):
+                                        for c in range(c1, c2+1):
+                                            grouped[r][c] = str(group_number)
+                                    group_number += 1
 
+
+            for c in range(cols):
+                if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
+                    """checks whole columns where all same values one by one"""
+                    for r in range(rows):
+                        grouped[r][c] = str(group_number)
+                    group_number += 1
             
+            for r, row in enumerate(kmap):
+                if all(col == group_by or col == "-" for col in row) and any(col == group_by for col in row):
+                    """groups whole rows where all same values one by one"""
+                    for c in range(cols):
+                        grouped[r][c] = str(group_number)
+                    group_number += 1
+
+
 
             for r in range(rows - 1):
                 if all(col == group_by or col == "-" for col in kmap[r]) and any(col == group_by for col in kmap[r]) and (
@@ -218,6 +257,15 @@ class KMapSolver:
 
 
 
+            for r, row in enumerate(kmap):
+                for c, col in enumerate(row):
+                    if row[c] == group_by and grouped[r][c] is None:
+                        """groups all values one by one"""
+                        grouped[r][c] = str(group_number)
+                        group_number += 1
+                
+
+
         group_map = {}
         next_group = 1
         for i, row in enumerate(grouped):
@@ -229,21 +277,8 @@ class KMapSolver:
                         next_group += 1
                     grouped[i][j] = group_map[val]
 
+        self.colorGroups(grouped)
 
-        group_colors = {}
-        color_cycle = cycle(["#FF5C5C","#AEFFAE","#7070FF","#E0E06B",
-                             "#9BFFFF","#FF93FF","#FFB56B","#B061FF",
-                             "#61FFB0","#ADFF5C","#FF48A3","#808080"])
-        for r in range(len(grouped)):
-            for c in range(len(grouped[0])):
-                group_id = grouped[r][c]
-                if group_id is not None:
-                    if group_id not in group_colors:
-                        """coloring groups"""
-                        group_colors[group_id] = next(color_cycle)
-                    color = group_colors[group_id]
-                    self.buttons[r][c].config(bg=color)
-        
         for i in grouped:
             print(i)
                 
