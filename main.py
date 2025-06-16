@@ -185,9 +185,9 @@ class KMapSolver:
 
 
         group_colors = {}
-        color_cycle = cycle(["#FF0000","#00FF00","#0000FF","#FFFF00","#00FFFF","#FF00FF",
-                            "#FF8000","#8000FF","#00FF80","#80FF00","#0080FF","#FF0080",
-                            "#C0C0C0","#808080","#00CED1","#7FFFD4","#A0CFCF","#FFE4C4"])
+        color_cycle = cycle(["#FF5C5C","#AEFFAE","#7070FF","#E0E06B",
+                             "#9BFFFF","#FF93FF","#FFB56B","#B061FF",
+                             "#61FFB0","#ADFF5C","#FF48A3","#808080"])
 
         for r in range(len(grouped)):
             for c in range(len(grouped[0])):
