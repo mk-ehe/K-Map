@@ -98,7 +98,8 @@ class KMapSolver:
                     
                 for cl in range(rows-1):
                     if row.count(group_by) + row.count("-") == 2 or row.count(group_by) + row.count("-") == 3:
-                        if (row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-"):
+                        if (row[cl] == group_by) and (row[cl+1] == group_by or row[cl+1] == "-") or (
+                            row[cl] == "-" and (row[cl+1] == group_by)):
                             """groups(2) value horizontally if next to eachother"""
                             grouped[r][cl] = str(group_number)
                             grouped[r][cl+1] = str(group_number)
