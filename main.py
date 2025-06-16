@@ -93,109 +93,133 @@ class KMapSolver:
         rows = len(kmap)
         cols = len(kmap[0])
         group_number = 1
-        grouped = [[None for row in range(len(kmap[0]))] for col in range(len(kmap))]
+        grouped = [[None for _ in range(cols)] for _ in range(rows)]
+
+        # Reset all button colors
+        for r in range(rows):
+            for c in range(cols):
+                self.buttons[r][c].config(bg="SystemButtonFace")
+
         if kmap:
+            row_vars = {2:1, 4:2, 8:3}.get(rows, 1)
+            col_vars = {2:1, 4:2, 8:3}.get(cols, 1)
+            row_labels = gray_labels(row_vars)
+            col_labels = gray_labels(col_vars)
+
+
+            # Whole map group
             if all(val == group_by or val == "-" for row in kmap for val in row):
-                # checks if whole map is value to group by
-                for r, row in enumerate(kmap):
-                    for c, val in enumerate(row):
+                for r in range(rows):
+                    for c in range(cols):
                         grouped[r][c] = str(group_number)
                 self.colorGroups(grouped)
-                print(grouped)
+                print("    ", end="")
+                for label in col_labels:
+                    print(f"{label:^5}", end="")
+                print()
+                for r, row in enumerate(grouped):
+                    print(f"{row_labels[r]:>3} ", end="")
+                    for val in row:
+                        print(f"{str(val) if val is not None else '.':^5}", end="")
+                    print()
+                print()
                 return
 
-            for r, row in enumerate(kmap):
-                for c, col in enumerate(row):
-                    self.buttons[r][c].config(bg="SystemButtonFace")
-                    if row[c] == group_by:
-                        # groups all values one by one
-                        grouped[r][c] = str(group_number)
-                        group_number += 1
 
+            # Main grouping logic
+            for r, row in enumerate(kmap):
+                # Horizontal pairs and wrap-around in row
                 for cl in range(cols - 1):
-                    if row.count(group_by) + row.count("-") == 2 or row.count(group_by) + row.count("-") == 3:
+                    if row.count(group_by) + row.count("-") in (2, 3):
                         if ((row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-")) or
                             (row[cl] == "-" and row[cl+1] == group_by)):
-                            # groups(2) value horizontally if next to eachother
                             grouped[r][cl] = str(group_number)
                             grouped[r][cl+1] = str(group_number)
                             group_number += 1
 
-                        if ((row[0] == group_by or row[0] == "-") and
-                            (row[-1] == group_by or row[-1] == "-") and
-                            (row[0] == group_by or row[-1] == group_by)):
-                            # groups(only 1 group of 2) value horizontally if on the other side(wrap-around)
-                            grouped[r][0] = str(group_number)
-                            grouped[r][-1] = str(group_number)
-                            group_number += 1
 
-                        cells = [kmap[r][0], kmap[r][-1], kmap[r-1][0], kmap[r-1][-1]]
-                        if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
-                            # wrap-around group into one big group if next to eachother (horizontal)
-                            grouped[r][0] = str(group_number)
-                            grouped[r][-1] = str(group_number)
-                            grouped[r-1][0] = str(group_number)
-                            grouped[r-1][-1] = str(group_number)
-                            group_number += 1
+                # Horizontal wrap-around
+                if row.count(group_by) + row.count("-") in (2, 3):
+                    if ((row[0] == group_by or row[0] == "-") and
+                        (row[-1] == group_by or row[-1] == "-") and
+                        (row[0] == group_by or row[-1] == group_by)):
+                        grouped[r][0] = str(group_number)
+                        grouped[r][-1] = str(group_number)
+                        group_number += 1
 
-                for c in range(cols):
-                    for rl in range(rows - 1):
-                        if ((kmap[rl][c] == group_by and (kmap[rl+1][c] == group_by or kmap[rl+1][c] == "-")) or
-                            (kmap[rl][c] == "-" and kmap[rl+1][c] == group_by)):
-                            # groups(2) value vertically if next to each other
-                            grouped[rl][c] = str(group_number)
-                            grouped[rl+1][c] = str(group_number)
-                            group_number += 1
 
-                for c in range(cols):
-                    col_vals = [kmap[r][c] for r in range(rows)]
-                    if col_vals.count(group_by) + col_vals.count("-") == 2 or col_vals.count(group_by) + col_vals.count("-") == 3:
-                        if ((col_vals[0] == group_by or col_vals[0] == "-") and
-                            (col_vals[-1] == group_by or col_vals[-1] == "-") and
-                            (col_vals[0] == group_by or col_vals[-1] == group_by)):
-                            # groups(only 1 group of 2) value vertically if on the other side(wrap-around)
-                            grouped[0][c] = str(group_number)
-                            grouped[-1][c] = str(group_number)
-                            group_number += 1
-
-                        cells = [kmap[0][c], kmap[-1][c], kmap[0][c-1], kmap[-1][c-1]]
-                        if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
-                            # wrap-around group into one big group if next to eachother (vertical)
-                            grouped[0][c] = str(group_number)
-                            grouped[-1][c] = str(group_number)
-                            grouped[0][c-1] = str(group_number)
-                            grouped[-1][c-1] = str(group_number)
-                            group_number += 1
-
-                if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
-                    kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
-                    not all(i == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])):
-                    # checks corners and groups them
-                    grouped[0][0] = str(group_number)
-                    grouped[0][-1] = str(group_number)
-                    grouped[-1][0] = str(group_number)
-                    grouped[-1][-1] = str(group_number)
+                # Horizontal wrap-around 2x2 block
+                cells = [kmap[r][0], kmap[r][-1], kmap[r-1][0], kmap[r-1][-1]]
+                if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
+                    grouped[r][0] = str(group_number)
+                    grouped[r][-1] = str(group_number)
+                    grouped[r-1][0] = str(group_number)
+                    grouped[r-1][-1] = str(group_number)
                     group_number += 1
 
-                for c in range(cols):
-                    if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
-                        # checks whole columns where all same values one by one
-                        for r in range(rows):
-                            grouped[r][c] = str(group_number)
+
+            # Vertical pairs
+            for c in range(cols):
+                for rl in range(rows - 1):
+                    if ((kmap[rl][c] == group_by and (kmap[rl+1][c] == group_by or kmap[rl+1][c] == "-")) or
+                        (kmap[rl][c] == "-" and kmap[rl+1][c] == group_by)):
+                        grouped[rl][c] = str(group_number)
+                        grouped[rl+1][c] = str(group_number)
                         group_number += 1
 
-                for r2, row2 in enumerate(kmap):
-                    if all(col == group_by or col == "-" for col in row2) and any(col == group_by for col in row2):
-                        # groups whole rows where all same values one by one
-                        for c in range(cols):
-                            grouped[r2][c] = str(group_number)
+
+            # Vertical wrap-around pairs and 2x2 block
+            for c in range(cols):
+                col_vals = [kmap[r][c] for r in range(rows)]
+                if col_vals.count(group_by) + col_vals.count("-") in (2, 3):
+                    if ((col_vals[0] == group_by or col_vals[0] == "-") and
+                        (col_vals[-1] == group_by or col_vals[-1] == "-") and
+                        (col_vals[0] == group_by or col_vals[-1] == group_by)):
+                        grouped[0][c] = str(group_number)
+                        grouped[-1][c] = str(group_number)
                         group_number += 1
 
+                    cells = [kmap[0][c], kmap[-1][c], kmap[0][c-1], kmap[-1][c-1]]
+                    if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
+                        grouped[0][c] = str(group_number)
+                        grouped[-1][c] = str(group_number)
+                        grouped[0][c-1] = str(group_number)
+                        grouped[-1][c-1] = str(group_number)
+                        group_number += 1
+
+
+            # Corners
+            if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
+                kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
+                not all(i == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])):
+                grouped[0][0] = str(group_number)
+                grouped[0][-1] = str(group_number)
+                grouped[-1][0] = str(group_number)
+                grouped[-1][-1] = str(group_number)
+                group_number += 1
+
+
+            # Full columns
+            for c in range(cols):
+                if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
+                    for r in range(rows):
+                        grouped[r][c] = str(group_number)
+                    group_number += 1
+
+
+            # Full rows
+            for r, row in enumerate(kmap):
+                if all(col == group_by or col == "-" for col in row) and any(col == group_by for col in row):
+                    for c in range(cols):
+                        grouped[r][c] = str(group_number)
+                    group_number += 1
+
+
+            # All 2x2 and larger rectangles
             for r1 in range(rows):
                 for r2 in range(r1+1, rows):
                     for c1 in range(cols):
                         for c2 in range(c1+1, cols):
-                            # all 2x2 groups
                             cells = [kmap[r][c] for r in range(r1, r2+1) for c in range(c1, c2+1)]
                             if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
                                 for r in range(r1, r2+1):
@@ -203,64 +227,56 @@ class KMapSolver:
                                         grouped[r][c] = str(group_number)
                                 group_number += 1
 
-            for c in range(cols):
-                if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
-                    # checks whole columns where all same values one by one
-                    for r in range(rows):
-                        grouped[r][c] = str(group_number)
-                    group_number += 1
 
-            for r2, row2 in enumerate(kmap):
-                if all(col == group_by or col == "-" for col in row2) and any(col == group_by for col in row2):
-                    # groups whole rows where all same values one by one
-                    for c in range(cols):
-                        grouped[r2][c] = str(group_number)
-                    group_number += 1
-
+            # Adjacent rows
             for r in range(rows - 1):
                 if all(col == group_by or col == "-" for col in kmap[r]) and any(col == group_by for col in kmap[r]) and (
                     all(col == group_by or col == "-" for col in kmap[r+1]) and any(col == group_by for col in kmap[r+1])):
-                    # groups rows next to eachother
                     for c in range(cols):
                         grouped[r][c] = str(group_number)
                         grouped[r+1][c] = str(group_number)
                     group_number += 1
 
-                if all(col == group_by or col == "-" for col in kmap[0]) and any(col == group_by for col in kmap[0]) and (
-                    all(col == group_by or col == "-" for col in kmap[-1]) and any(col == group_by for col in kmap[-1])):
-                    # groups first and last row if proper group
-                    for c in range(cols):
-                        grouped[0][c] = str(group_number)
-                        grouped[-1][c] = str(group_number)
-                    group_number += 1
 
+            # Wrap-around rows
+            if all(col == group_by or col == "-" for col in kmap[0]) and any(col == group_by for col in kmap[0]) and (
+                all(col == group_by or col == "-" for col in kmap[-1]) and any(col == group_by for col in kmap[-1])):
+                for c in range(cols):
+                    grouped[0][c] = str(group_number)
+                    grouped[-1][c] = str(group_number)
+                group_number += 1
+
+
+            # Adjacent columns
             for c in range(cols - 1):
                 col1 = [kmap[r][c] for r in range(rows)]
                 col2 = [kmap[r][c+1] for r in range(rows)]
                 if (all(val == group_by or val == "-" for val in col1) and any(val == group_by for val in col1) and
                     all(val == group_by or val == "-" for val in col2) and any(val == group_by for val in col2)):
-                    # groups columns next to each other
                     for r in range(rows):
                         grouped[r][c] = str(group_number)
                         grouped[r][c+1] = str(group_number)
                     group_number += 1
 
+
+            # Wrap-around columns
             col_first = [kmap[r][0] for r in range(rows)]
             col_last = [kmap[r][cols-1] for r in range(rows)]
             if (all(val == group_by or val == "-" for val in col_first) and any(val == group_by for val in col_first) and
                 all(val == group_by or val == "-" for val in col_last) and any(val == group_by for val in col_last)):
-                # groups wrap-around first and last column if proper group
                 for r in range(rows):
                     grouped[r][0] = str(group_number)
                     grouped[r][cols-1] = str(group_number)
                 group_number += 1
 
-            for r2, row2 in enumerate(kmap):
-                for c, col in enumerate(row2):
-                    if row2[c] == group_by and grouped[r2][c] is None:
-                        # groups all values one by one
-                        grouped[r2][c] = str(group_number)
+
+            # Final single cell grouping (if not already grouped)
+            for r, row in enumerate(kmap):
+                for c, val in enumerate(row):
+                    if val == group_by and grouped[r][c] is None:
+                        grouped[r][c] = str(group_number)
                         group_number += 1
+
 
         group_map = {}
         next_group = 1
@@ -268,14 +284,22 @@ class KMapSolver:
             for j, val in enumerate(row):
                 if val is not None:
                     if val not in group_map:
-                        # correcting group number
                         group_map[val] = str(next_group)
                         next_group += 1
                     grouped[i][j] = group_map[val]
 
         self.colorGroups(grouped)
-        for i in grouped:
-            print(i)
+        
+        print("    ", end="")
+        for label in col_labels:
+            print(f"{label:^5}", end="")
+        print()
+        for r, row in enumerate(grouped):
+            print(f"{row_labels[r]:>3} ", end="")
+            for val in row:
+                print(f"{str(val) if val is not None else '.':^5}", end="")
+            print()
+        print()
                 
 
     def changeSign(self, button):
