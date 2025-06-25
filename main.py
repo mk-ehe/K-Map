@@ -142,7 +142,7 @@ class KMapSolver:
             for r, row in enumerate(kmap):
                 for cl in range(cols - 1):
 
-                    if (row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl-1] != group_by) and not_wrapped_horizontal:
+                    if (row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl-1] != group_by):
                         grouped[r][cl] = str(group_number)
                         grouped[r][cl+1] = str(group_number)
                         group_number += 1
