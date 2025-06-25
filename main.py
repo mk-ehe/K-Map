@@ -138,6 +138,7 @@ class KMapSolver:
                             grouped[r][c] = str(group_number)
                             grouped[r+1][c] = str(group_number)
                             group_number += 1
+
                     except IndexError:
                         if ((kmap[r][c] == group_by and (kmap[r+1][c] == group_by or kmap[r+1][c] == "-") and kmap[r-1][c] != group_by) or
                             (kmap[r][c] == "-" and kmap[r+1][c] == group_by)) and not_wrapped_vertical:
@@ -203,7 +204,6 @@ class KMapSolver:
                         grouped[0][c-1] = str(group_number)
                         grouped[-1][c-1] = str(group_number)
                         group_number += 1
-
 
             # Full columns
             for c in range(cols):
