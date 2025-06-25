@@ -122,7 +122,7 @@ class KMapSolver:
                     for val in row:
                         print(f"{str(val) if val is not None else '.':^5}", end="")
                     print()
-                print()
+                print() 
                 return
 
 
@@ -147,21 +147,21 @@ class KMapSolver:
             for r, row in enumerate(kmap):
                 # Horizontal pairs and wrap-around in row
                 for cl in range(cols - 1):
-                    try:
-                        if row.count(group_by) + row.count("-") in (2, 3):
+                    if row.count(group_by) + row.count("-") in (2, 3):
+                        not_wrapped = True if row[0] != group_by and row[-1] != group_by else False
+                        try:
                             if ((row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl-1] != group_by) or
-                                (row[cl] == "-" and row[cl+1] == group_by) and row[cl+2] != group_by):
+                                (row[cl] == "-" and row[cl+1] == group_by) and row[cl+2] != group_by) and not_wrapped:
                                 grouped[r][cl] = str(group_number)
                                 grouped[r][cl+1] = str(group_number)
                                 group_number += 1
 
-                    except IndexError:
-                            if row.count(group_by) + row.count("-") in (2, 3):
-                                if ((row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl-1] != group_by) or
-                                    (row[cl] == "-" and row[cl+1] == group_by)):
-                                    grouped[r][cl] = str(group_number)
-                                    grouped[r][cl+1] = str(group_number)
-                                    group_number += 1
+                        except IndexError:
+                            if ((row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl-1] != group_by) or
+                                (row[cl] == "-" and row[cl+1] == group_by) and not_wrapped):
+                                grouped[r][cl] = str(group_number)
+                                grouped[r][cl+1] = str(group_number)
+                                group_number += 1
 
                     # Horizontal wrap-around
                     if ((row[0] == group_by or row[0] == "-") and
