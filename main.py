@@ -21,7 +21,7 @@ class KMapSolver:
         
         self.dropdown_var = StringVar(self.master)
         self.dropdown_var.set("Select Map")
-        self.options = ["2x2", "2x4", "4x4", "4x8"]
+        self.options = ["2x2", "2x4", "4x4"]
         self.choose_map = OptionMenu(self.master, self.dropdown_var, *self.options, command=self.changeMap)
         self.choose_map.config(width=10)
         self.choose_map.place(x=400, y=10)
@@ -359,13 +359,6 @@ class KMapSolver:
             self.function_label_col.config(text="CD")
             self.function_label_row.place(x=380, y=185, anchor="e")
             self.function_label_col.place(x=498, y=44)
-            
-        elif self.value == "4x8":
-            self.createMap(4,8)
-            self.function_label_row.config(text="AB")
-            self.function_label_col.config(text="CDE")
-            self.function_label_row.place(x=280, y=185, anchor="e")
-            self.function_label_col.place(x=491, y=44)
 
 
 if __name__ == "__main__":
