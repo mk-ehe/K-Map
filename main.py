@@ -131,10 +131,7 @@ class KMapSolver:
             # Horizontal pairs excluding "-"
             for r in range(rows):
                 for c in range(cols - 1):
-                    if (kmap[r][c] == group_by and
-                        kmap[r][c+1] == group_by and
-                        grouped[r][c] is None and
-                        grouped[r][c+1] is None):
+                    if (kmap[r][c] == group_by and kmap[r][c+1] == group_by and grouped[r][c] is None and grouped[r][c+1] is None):
                         grouped[r][c] = str(group_number)
                         grouped[r][c+1] = str(group_number)
                         group_number += 1
