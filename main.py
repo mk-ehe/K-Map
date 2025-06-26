@@ -128,46 +128,27 @@ class KMapSolver:
 
             # Main grouping logic
 
-            # Vertical pairs excluding "-"
-            for c in range(cols):
-                for r in range(rows - 1):
-                    if (
-                        kmap[r][c] == group_by and
-                        kmap[r+1][c] == group_by and
-                        grouped[r][c] is None and
-                        grouped[r+1][c] is None
-                    ):
-                        grouped[r][c] = str(group_number)
-                        grouped[r+1][c] = str(group_number)
-                        group_number += 1
-
-
             # Horizontal pairs excluding "-"
             for r in range(rows):
                 for c in range(cols - 1):
-                    if (
-                        kmap[r][c] == group_by and
+                    if (kmap[r][c] == group_by and
                         kmap[r][c+1] == group_by and
                         grouped[r][c] is None and
-                        grouped[r][c+1] is None
-                    ):
+                        grouped[r][c+1] is None):
                         grouped[r][c] = str(group_number)
                         grouped[r][c+1] = str(group_number)
                         group_number += 1
 
 
-            # Vertical pairs including "-"
+            # Vertical pairs excluding "-"
             for c in range(cols):
                 for r in range(rows - 1):
-                    if (kmap[r][c] == group_by and (kmap[r+1][c] == group_by or kmap[r+1][c] == "-") and kmap[r-1][c] != group_by and
-                        ((kmap[r][c-1] != group_by) and kmap[r+1][c] == "-")):
+                    if (kmap[r][c] == group_by and
+                        kmap[r+1][c] == group_by and
+                        grouped[r][c] is None and
+                        grouped[r+1][c] is None):
                         grouped[r][c] = str(group_number)
                         grouped[r+1][c] = str(group_number)
-                        group_number += 1
-
-                    elif (kmap[r+1][c] == group_by and (kmap[r][c] == group_by or kmap[r][c] == "-") and not grouped[r+1][c]):
-                        grouped[r+1][c] = str(group_number)
-                        grouped[r][c] = str(group_number)
                         group_number += 1
 
                         
@@ -205,6 +186,21 @@ class KMapSolver:
                         grouped[r][-1] = str(group_number)
                         group_number += 1
 
+
+            # Vertical pairs including "-"
+            for c in range(cols):
+                for r in range(rows - 1):
+                    if (kmap[r][c] == group_by and (kmap[r+1][c] == group_by or kmap[r+1][c] == "-") and kmap[r-1][c] != group_by and
+                        ((kmap[r][c-1] != group_by) and kmap[r+1][c] == "-")) and not grouped[r+1][c]:
+                        grouped[r][c] = str(group_number)
+                        grouped[r+1][c] = str(group_number)
+                        group_number += 1
+
+                    elif (kmap[r+1][c] == group_by and (kmap[r][c] == group_by or kmap[r][c] == "-") and not grouped[r+1][c]):
+                        grouped[r+1][c] = str(group_number)
+                        grouped[r][c] = str(group_number)
+                        group_number += 1
+                        
 
             # Vertical wrap-around pairs and 2x2 block
             for c in range(cols):
