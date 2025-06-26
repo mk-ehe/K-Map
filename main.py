@@ -128,8 +128,7 @@ class KMapSolver:
 
             # Main grouping logic
 
-            
-            # Vertical pairs (non-wrap)
+            # Vertical pairs excluding "-"
             for c in range(cols):
                 for r in range(rows - 1):
                     if (
@@ -142,7 +141,8 @@ class KMapSolver:
                         grouped[r+1][c] = str(group_number)
                         group_number += 1
 
-            # Horizontal pairs (non-wrap)
+
+            # Horizontal pairs excluding "-"
             for r in range(rows):
                 for c in range(cols - 1):
                     if (
@@ -156,7 +156,7 @@ class KMapSolver:
                         group_number += 1
 
 
-            # Vertical pairs
+            # Vertical pairs including "-"
             for c in range(cols):
                 for r in range(rows - 1):
                     if (kmap[r][c] == group_by and (kmap[r+1][c] == group_by or kmap[r+1][c] == "-") and kmap[r-1][c] != group_by and
@@ -171,7 +171,7 @@ class KMapSolver:
                         group_number += 1
 
                         
-            # Horizontal pairs and wrap-around in row
+            # Horizontal pairs in row including "-"
             for r, row in enumerate(kmap):
                 for cl in range(cols - 1):
                     if (row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl-1] != group_by and 
