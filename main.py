@@ -140,10 +140,7 @@ class KMapSolver:
             # Vertical pairs excluding "-"
             for c in range(cols):
                 for r in range(rows - 1):
-                    if (kmap[r][c] == group_by and
-                        kmap[r+1][c] == group_by and
-                        grouped[r][c] is None and
-                        grouped[r+1][c] is None):
+                    if (kmap[r][c] == group_by and kmap[r+1][c] == group_by and not grouped[r][c]):
                         grouped[r][c] = str(group_number)
                         grouped[r+1][c] = str(group_number)
                         group_number += 1
