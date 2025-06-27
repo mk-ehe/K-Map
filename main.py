@@ -248,34 +248,34 @@ class KMapSolver:
                     group_number += 1
 
 
+            # Full rows
+            for r, row in enumerate(kmap):
+                if all(col == group_by or col == "-" for col in row) and any(col == group_by for col in row):
+                    for c in range(cols):
+                        grouped[r][c] = str(group_number)
+                    group_number += 1
+
+
+            # All 2x2 and larger rectangles
+            for r1 in range(rows):
+                for r2 in range(r1+1, rows):
+                    for c1 in range(cols):
+                        for c2 in range(c1+1, cols):
+                            cells = [kmap[r][c] for r in range(r1, r2+1) for c in range(c1, c2+1)]
+                            if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
+                                for r in range(r1, r2+1):
+                                    for c in range(c1, c2+1):
+                                        grouped[r][c] = str(group_number)
+                                group_number += 1
+
+
             if self.choose_map.cget('text') not in ("2x2", "2x4"):
-            # Full columns
+                # Full columns
                 for c in range(cols):
                     if all(kmap[r][c] == group_by or kmap[r][c] == "-" for r in range(rows)) and any(kmap[r][c] == group_by for r in range(rows)):
                         for r in range(rows):
                             grouped[r][c] = str(group_number)
                         group_number += 1
-
-
-                # Full rows
-                for r, row in enumerate(kmap):
-                    if all(col == group_by or col == "-" for col in row) and any(col == group_by for col in row):
-                        for c in range(cols):
-                            grouped[r][c] = str(group_number)
-                        group_number += 1
-
-
-                # All 2x2 and larger rectangles
-                for r1 in range(rows):
-                    for r2 in range(r1+1, rows):
-                        for c1 in range(cols):
-                            for c2 in range(c1+1, cols):
-                                cells = [kmap[r][c] for r in range(r1, r2+1) for c in range(c1, c2+1)]
-                                if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
-                                    for r in range(r1, r2+1):
-                                        for c in range(c1, c2+1):
-                                            grouped[r][c] = str(group_number)
-                                    group_number += 1
 
 
                 # Adjacent rows
@@ -286,8 +286,6 @@ class KMapSolver:
                             grouped[r][c] = str(group_number)
                             grouped[r+1][c] = str(group_number)
                         group_number += 1
-
-
 
 
                 # Adjacent columns
