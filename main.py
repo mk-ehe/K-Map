@@ -269,6 +269,17 @@ class KMapSolver:
                                 group_number += 1
 
 
+            # Corners
+            if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
+                kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
+                not all(i == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])):
+                grouped[0][0] = str(group_number)
+                grouped[0][-1] = str(group_number)
+                grouped[-1][0] = str(group_number)
+                grouped[-1][-1] = str(group_number)
+                group_number += 1
+
+
             if self.choose_map.cget('text') not in ("2x2", "2x4"):
                 # Full columns
                 for c in range(cols):
@@ -317,17 +328,6 @@ class KMapSolver:
                 for r in range(rows):
                     grouped[r][0] = str(group_number)
                     grouped[r][cols-1] = str(group_number)
-                group_number += 1
-
-
-            # Corners
-            if (kmap[0][0] == group_by or kmap[0][0] == "-") and (kmap[0][-1] == group_by or kmap[0][-1] == "-") and (
-                kmap[-1][0] == group_by or kmap[-1][0] == "-") and (kmap[-1][-1] == group_by or kmap[-1][-1] == "-") and (
-                not all(i == "-" for i in [kmap[0][0], kmap[0][-1], kmap[-1][0], kmap[-1][-1]])):
-                grouped[0][0] = str(group_number)
-                grouped[0][-1] = str(group_number)
-                grouped[-1][0] = str(group_number)
-                grouped[-1][-1] = str(group_number)
                 group_number += 1
 
 
