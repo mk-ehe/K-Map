@@ -146,8 +146,8 @@ class KMapSolver:
                         group_number += 1
 
 
+            # Vertical wrap-around pairs and 2x2 block
             if self.choose_map.cget('text') not in ("2x2", "2x4"):
-                # Vertical wrap-around pairs and 2x2 block
                 for c in range(cols):
                     col_vals = [kmap[r][c] for r in range(rows)]
                     if ((col_vals[0] == group_by or col_vals[0] == "-") and
@@ -174,16 +174,6 @@ class KMapSolver:
                         group_number += 1
 
 
-                # Adjacent rows
-                for r in range(rows - 1):
-                    if all(col == group_by or col == "-" for col in kmap[r]) and any(col == group_by for col in kmap[r]) and (
-                        all(col == group_by or col == "-" for col in kmap[r+1]) and any(col == group_by for col in kmap[r+1])):
-                        for c in range(cols):
-                            grouped[r][c] = str(group_number)
-                            grouped[r+1][c] = str(group_number)
-                        group_number += 1
-
-
                 # Adjacent columns
                 for c in range(cols - 1):
                     col1 = [kmap[r][c] for r in range(rows)]
@@ -195,67 +185,77 @@ class KMapSolver:
                             grouped[r][c+1] = str(group_number)
                         group_number += 1
 
-            
-                # Wrap-around rows
-                if all(col == group_by or col == "-" for col in kmap[0]) and any(col == group_by for col in kmap[0]) and (
-                    all(col == group_by or col == "-" for col in kmap[-1]) and any(col == group_by for col in kmap[-1])):
+
+            # Adjacent rows
+            for r in range(rows - 1):
+                if all(col == group_by or col == "-" for col in kmap[r]) and any(col == group_by for col in kmap[r]) and (
+                    all(col == group_by or col == "-" for col in kmap[r+1]) and any(col == group_by for col in kmap[r+1])):
                     for c in range(cols):
-                        grouped[0][c] = str(group_number)
-                        grouped[-1][c] = str(group_number)
+                        grouped[r][c] = str(group_number)
+                        grouped[r+1][c] = str(group_number)
                     group_number += 1
 
-
-                # Horizontal pairs in row including "-"
-                for r, row in enumerate(kmap):
-                    for cl in range(cols - 1):
-                        if (row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl-1] != group_by and 
-                            ((kmap[r-1][cl] != group_by) and row[cl] == "-")):
-                            grouped[r][cl] = str(group_number)
-                            grouped[r][cl+1] = str(group_number)
-                            group_number += 1
-
-                        elif (row[cl+1] == group_by and (row[cl] == group_by or row[cl] == "-") and row[cl] != group_by and 
-                        ((kmap[r-1][cl] != group_by) and kmap[r][cl-1] == "-")):
-                            grouped[r][cl+1] = str(group_number)
-                            grouped[r][cl] = str(group_number)
-                            group_number += 1
-
-                        elif row[cl+1] == group_by and (row[cl] == group_by or row[cl] == "-") and row[cl] != group_by and not grouped[r][cl+1]:
-                            grouped[r][cl+1] = str(group_number)
-                            grouped[r][cl] = str(group_number)
-                            group_number += 1
-
-                        elif row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl+1] != group_by and not grouped[r][cl]:
-                            grouped[r][cl+1] = str(group_number)
-                            grouped[r][cl] = str(group_number)
-                            group_number += 1
-
-
-                        # Horizontal wrap-around
-                        if ((row[0] == group_by or row[0] == "-") and
-                            (row[-1] == group_by or row[-1] == "-") and
-                            (row[0] == group_by or row[-1] == group_by)):
-                            grouped[r][0] = str(group_number)
-                            grouped[r][-1] = str(group_number)
-                            group_number += 1
-
-
-                # Vertical pairs including "-"
+        
+            # Wrap-around rows
+            if all(col == group_by or col == "-" for col in kmap[0]) and any(col == group_by for col in kmap[0]) and (
+                all(col == group_by or col == "-" for col in kmap[-1]) and any(col == group_by for col in kmap[-1])):
                 for c in range(cols):
-                    for r in range(rows - 1):
-                        if (kmap[r+1][c] == group_by and (kmap[r][c] == group_by or kmap[r][c] == "-") and not grouped[r+1][c]):
-                            grouped[r+1][c] = str(group_number)
-                            grouped[r][c] = str(group_number)
-                            group_number += 1
-
-                        elif (kmap[r][c] == group_by and (kmap[r+1][c] == group_by or kmap[r+1][c] == "-") and kmap[r-1][c] != group_by and
-                            ((kmap[r][c-1] != group_by) and kmap[r+1][c] == "-")) and not grouped[r][c]:
-                            grouped[r][c] = str(group_number)
-                            grouped[r+1][c] = str(group_number)
-                            group_number += 1
+                    grouped[0][c] = str(group_number)
+                    grouped[-1][c] = str(group_number)
+                group_number += 1
 
 
-            elif self.choose_map.cget('text') in ("2x2", "2x4"):
+            # Horizontal pairs in row including "-"
+            for r, row in enumerate(kmap):
+                for cl in range(cols - 1):
+                    if (row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl-1] != group_by and 
+                        ((kmap[r-1][cl] != group_by) and row[cl] == "-")):
+                        grouped[r][cl] = str(group_number)
+                        grouped[r][cl+1] = str(group_number)
+                        group_number += 1
+
+                    elif (row[cl+1] == group_by and (row[cl] == group_by or row[cl] == "-") and row[cl] != group_by and 
+                    ((kmap[r-1][cl] != group_by) and kmap[r][cl-1] == "-")):
+                        grouped[r][cl+1] = str(group_number)
+                        grouped[r][cl] = str(group_number)
+                        group_number += 1
+
+                    elif row[cl+1] == group_by and (row[cl] == group_by or row[cl] == "-") and row[cl] != group_by and not grouped[r][cl+1]:
+                        grouped[r][cl+1] = str(group_number)
+                        grouped[r][cl] = str(group_number)
+                        group_number += 1
+
+                    elif row[cl] == group_by and (row[cl+1] == group_by or row[cl+1] == "-") and row[cl+1] != group_by and not grouped[r][cl]:
+                        grouped[r][cl+1] = str(group_number)
+                        grouped[r][cl] = str(group_number)
+                        group_number += 1
+
+
+                    # Horizontal wrap-around
+                    if ((row[0] == group_by or row[0] == "-") and
+                        (row[-1] == group_by or row[-1] == "-") and
+                        (row[0] == group_by or row[-1] == group_by)):
+                        grouped[r][0] = str(group_number)
+                        grouped[r][-1] = str(group_number)
+                        group_number += 1
+
+
+            # Vertical pairs including "-"
+            for c in range(cols):
+                for r in range(rows - 1):
+                    if (kmap[r+1][c] == group_by and (kmap[r][c] == group_by or kmap[r][c] == "-") and not grouped[r+1][c]):
+                        grouped[r+1][c] = str(group_number)
+                        grouped[r][c] = str(group_number)
+                        group_number += 1
+
+                    elif (kmap[r][c] == group_by and (kmap[r+1][c] == group_by or kmap[r+1][c] == "-") and kmap[r-1][c] != group_by and
+                        ((kmap[r][c-1] != group_by) and kmap[r+1][c] == "-")) and not grouped[r][c]:
+                        grouped[r][c] = str(group_number)
+                        grouped[r+1][c] = str(group_number)
+                        group_number += 1
+
+
+            if self.choose_map.cget('text') in ("2x2", "2x4"):
                 # Horizontal pairs including "-"
                 for r in range(rows):
                     for c in range(cols - 1):
