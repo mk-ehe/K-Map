@@ -168,14 +168,6 @@ class KMapSolver:
                         grouped[-1][c] = str(group_number)
                         group_number += 1
 
-                    cells = [kmap[0][c], kmap[-1][c], kmap[0][c-1], kmap[-1][c-1]]
-                    if all(cell == group_by or cell == "-" for cell in cells) and any(cell == group_by for cell in cells):
-                        grouped[0][c] = str(group_number)
-                        grouped[-1][c] = str(group_number)
-                        grouped[0][c-1] = str(group_number)
-                        grouped[-1][c-1] = str(group_number)
-                        group_number += 1
-
 
                 # Full columns
                 for c in range(cols):
@@ -247,15 +239,6 @@ class KMapSolver:
                         grouped[r+1][c] = str(group_number)
                     group_number += 1
 
-        
-            # Wrap-around rows
-            if all(col == group_by or col == "-" for col in kmap[0]) and any(col == group_by for col in kmap[0]) and (
-                all(col == group_by or col == "-" for col in kmap[-1]) and any(col == group_by for col in kmap[-1])):
-                for c in range(cols):
-                    grouped[0][c] = str(group_number)
-                    grouped[-1][c] = str(group_number)
-                group_number += 1
-
 
             # Horizontal wrap-around and 2x2 block
             for r in range(rows):
@@ -308,6 +291,15 @@ class KMapSolver:
                 for r in range(rows):
                     grouped[r][0] = str(group_number)
                     grouped[r][cols-1] = str(group_number)
+                group_number += 1
+
+
+            # Wrap-around rows
+            if all(col == group_by or col == "-" for col in kmap[0]) and any(col == group_by for col in kmap[0]) and (
+                all(col == group_by or col == "-" for col in kmap[-1]) and any(col == group_by for col in kmap[-1])):
+                for c in range(cols):
+                    grouped[0][c] = str(group_number)
+                    grouped[-1][c] = str(group_number)
                 group_number += 1
 
 
